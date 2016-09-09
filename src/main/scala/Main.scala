@@ -51,17 +51,19 @@ object Main extends App {
     )
   }
 
+  def fetchDocument(url: String): Future[Document] = Future { browser.get(url) }
+
+  def event(link: String): Future[Event] = {
+    val id = link.replaceAll("[^\\d]", "").toInt
+    fetchDocument(link).map(doc => parseEvent(id, doc))
+  }
+
   val browser = JsoupBrowser()
   val urlPrefix =
     "http://www.deventer.info/nl/agenda/jaarkalender?sub=30&f_agenda_start_date=01-01-2016&f_agenda_end_date=31-12-2016&start="
   val futures: Seq[Future[List[Event]]] = Range(0, 5)
     .map(urlPrefix + _ + "0")
-    .map(url =>
-      Future { browser.get(url) }.flatMap(doc =>
-        Future.sequence(links(doc).map { link =>
-          val id = link.replaceAll("[^\\d]", "").toInt
-          Future { browser.get(link) }.map(doc => parseEvent(id, doc))
-        })))
+    .map(url => fetchDocument(url).flatMap(doc => Future.sequence(links(doc).map(event))))
 
   val results = Await.result(Future.sequence(futures), 20 seconds)
   results.flatten.map(asIcal).map(print)
