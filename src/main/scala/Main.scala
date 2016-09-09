@@ -9,6 +9,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import icalendar._
 import icalendar.Properties._
+import icalendar.CalendarProperties._
 import icalendar.ValueTypes._
 import icalendar.ical.Writer._
 
@@ -65,6 +66,9 @@ object Main extends App {
     .map(urlPrefix + _ + "0")
     .map(url => fetchDocument(url).flatMap(doc => Future.sequence(links(doc).map(event))))
 
-  val results = Await.result(Future.sequence(futures), 20 seconds)
-  results.flatten.map(asIcal).map(print)
+  val results: List[Event] = Await.result(Future.sequence(futures), 20 seconds).flatten.toList
+  print(asIcal(Calendar(
+    prodid = Prodid("-//raboof/vvv2ical//NONSGML v1.0//NL"),
+    events = results
+  )))
 }
