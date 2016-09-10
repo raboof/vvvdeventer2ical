@@ -33,7 +33,8 @@ object Main extends App {
       .flatMap(_.children.sliding(2, 2).map { case Seq(k, v) => ((k >> text("dt")) -> (v >> text("dd"))) })
       .toMap
 
-  def parseEvent(id: Int, doc: Document): Event = {
+  def parseEvent(url: String, doc: Document): Event = {
+    val id = url.replaceAll("[^\\d]", "").toInt
     val article = doc >> element("article")
     val data = getDatalistFields(article)
     val datePattern = "(\\d+)-(\\d+)-(\\d+).*".r
@@ -48,15 +49,15 @@ object Main extends App {
         ZonedDateTime.parse(s"${date}T${starttime}+02:00[Europe/Amsterdam]").withZoneSameInstant(ZoneOffset.UTC),
       summary = Summary(Text.fromString(article >> text("h1"))),
       description = Description(Text.fromString(article >> text("p"))),
-      categories = List(Categories(ListType(data("Categorie:"))))
+      categories = List(Categories(ListType(data("Categorie:")))),
+      url = Url(url)
     )
   }
 
   def fetchDocument(url: String): Future[Document] = Future { browser.get(url) }
 
-  def event(link: String): Future[Event] = {
-    val id = link.replaceAll("[^\\d]", "").toInt
-    fetchDocument(link).map(doc => parseEvent(id, doc))
+  def event(url: String): Future[Event] = {
+    fetchDocument(url).map(doc => parseEvent(url, doc))
   }
 
   val browser = JsoupBrowser()
