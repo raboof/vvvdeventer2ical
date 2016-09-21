@@ -1,3 +1,4 @@
+import java.io.{ InputStream, OutputStream }
 import java.time._
 
 import scala.language.implicitConversions
@@ -21,7 +22,9 @@ import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL.Parse._
 
-object Main extends App {
+trait Main {
+  val browser = JsoupBrowser()
+
   implicit def liftOption[T](value: T): Option[T] = Some(value)
 
   def links(doc: Document): List[String] =
@@ -60,16 +63,28 @@ object Main extends App {
     fetchDocument(url).map(doc => parseEvent(url, doc))
   }
 
-  val browser = JsoupBrowser()
-  val urlPrefix =
-    "http://www.deventer.info/nl/agenda/jaarkalender?sub=30&f_agenda_start_date=01-01-2016&f_agenda_end_date=31-12-2016&start="
-  val futures: Seq[Future[List[Event]]] = Range(0, 5)
-    .map(urlPrefix + _ + "0")
-    .map(url => fetchDocument(url).flatMap(doc => Future.sequence(links(doc).map(event))))
+  def fetchCalendar(): String = {
+    val urlPrefix =
+      "http://www.deventer.info/nl/agenda/jaarkalender?sub=30&f_agenda_start_date=01-01-2016&f_agenda_end_date=31-12-2016&start="
+    val futures: Seq[Future[List[Event]]] = Range(0, 5)
+      .map(urlPrefix + _ + "0")
+      .map(url => fetchDocument(url).flatMap(doc => Future.sequence(links(doc).map(event))))
 
-  val results: List[Event] = Await.result(Future.sequence(futures), 20 seconds).flatten.toList
-  print(asIcal(Calendar(
-    prodid = Prodid("-//raboof/vvv2ical//NONSGML v1.0//NL"),
-    events = results
-  )))
+    val results: List[Event] = Await.result(Future.sequence(futures), 20 seconds).flatten.toList
+    asIcal(Calendar(
+      prodid = Prodid("-//raboof/vvv2ical//NONSGML v1.0//NL"),
+      events = results
+    ))
+  }
+}
+
+class MainLambda extends Main {
+  def vvvdeventer2ical(input: InputStream, output: OutputStream): Unit = {
+    output.write(fetchCalendar().getBytes("UTF-8"))
+    output.flush()
+  }
+}
+
+object MainApp extends App with Main {
+  print(fetchCalendar())
 }
