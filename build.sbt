@@ -8,3 +8,5 @@ libraryDependencies += "default" %% "scala-icalendar" % "0.1-SNAPSHOT"
 libraryDependencies += "net.ruippeixotog" %% "scala-scraper" % "1.1.0-SNAPSHOT"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test"
+
+libraryDependencies += "com.amazonaws" % "aws-lambda-java-core" % "1.0.0"

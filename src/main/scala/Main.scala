@@ -1,6 +1,8 @@
 import java.io.{ InputStream, OutputStream }
 import java.time._
 
+import com.amazonaws.services.lambda.runtime.{ Context, RequestStreamHandler }
+
 import scala.language.implicitConversions
 import scala.language.postfixOps
 
@@ -23,8 +25,6 @@ import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL.Parse._
 
 trait Main {
-  val browser = JsoupBrowser()
-
   implicit def liftOption[T](value: T): Option[T] = Some(value)
 
   def links(doc: Document): List[String] =
@@ -57,7 +57,10 @@ trait Main {
     )
   }
 
-  def fetchDocument(url: String): Future[Document] = Future { browser.get(url) }
+  def fetchDocument(url: String): Future[Document] = Future {
+    val browser = JsoupBrowser()
+    browser.get(url)
+  }
 
   def event(url: String): Future[Event] = {
     fetchDocument(url).map(doc => parseEvent(url, doc))
@@ -79,9 +82,12 @@ trait Main {
 }
 
 class MainLambda extends Main {
-  def vvvdeventer2ical(input: InputStream, output: OutputStream): Unit = {
-    output.write(fetchCalendar().getBytes("UTF-8"))
-    output.flush()
+  def handleRequest(inputStream: InputStream, outputStream: OutputStream, context: Context): Unit = {
+    context.getLogger().log("starting\n")
+    val result = fetchCalendar()
+    outputStream.write(result.getBytes("UTF-8"));
+    outputStream.flush();
+    context.getLogger().log("returning\n")
   }
 }
 
