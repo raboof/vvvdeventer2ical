@@ -5,6 +5,7 @@ import com.amazonaws.services.lambda.runtime.{ Context, RequestStreamHandler }
 
 import scala.language.implicitConversions
 import scala.language.postfixOps
+import scala.io.Source
 
 import scala.concurrent._
 import scala.concurrent.duration._
@@ -59,7 +60,10 @@ trait Main {
 
   def fetchDocument(url: String): Future[Document] = Future {
     val browser = JsoupBrowser()
-    browser.get(url)
+
+    // JsoupBrowser.get expects UTF-8, vvvdeventer is windows codepage
+    val html = Source.fromURL(url, "windows-1252").mkString
+    browser.parseString(html)
   }
 
   def event(url: String): Future[Event] = {
