@@ -71,13 +71,14 @@ trait Main {
   }
 
   def fetchCalendar(): String = {
+    val year = java.time.LocalDate.now().getYear
     val urlPrefix =
-      "http://www.deventer.info/nl/agenda/jaarkalender?sub=30&f_agenda_start_date=01-01-2016&f_agenda_end_date=31-12-2016&start="
-    val futures: Seq[Future[List[Event]]] = Range(0, 5)
+      s"http://www.deventer.info/nl/agenda/jaarkalender?sub=30&f_agenda_start_date=01-01-$year&f_agenda_end_date=31-12-$year&start="
+    val futures: Seq[Future[List[Event]]] = Range(0, 10)
       .map(urlPrefix + _ + "0")
       .map(url => fetchDocument(url).flatMap(doc => Future.sequence(links(doc).map(event))))
 
-    val results: List[Event] = Await.result(Future.sequence(futures), 20 seconds).flatten.toList
+    val results: List[Event] = Await.result(Future.sequence(futures), 60 seconds).flatten.toList
     asIcal(Calendar(
       prodid = Prodid("-//raboof/vvv2ical//NONSGML v1.0//NL"),
       events = results
