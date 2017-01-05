@@ -74,7 +74,7 @@ trait Main {
     val now = java.time.LocalDate.now()
     val urlPrefix =
       s"http://www.deventer.info/nl/agenda/jaarkalender?sub=30&f_agenda_start_date=01-${now.getMonth.ordinal + 1}-${now.getYear}&f_agenda_end_date=31-12-${now.getYear}&start="
-    val futures: Seq[Future[List[Event]]] = Range(0, 3)
+    val futures: Seq[Future[List[Event]]] = Range(0, 1)
       .map(urlPrefix + _ + "0")
       .map(url => fetchDocument(url).flatMap(doc => Future.sequence(links(doc).map(event))))
 
