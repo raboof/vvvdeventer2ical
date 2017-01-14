@@ -9,7 +9,7 @@ import scala.io.Source
 
 import scala.concurrent._
 import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
+// import scala.concurrent.ExecutionContext.Implicits.global
 
 import icalendar._
 import icalendar.Properties._
@@ -26,6 +26,7 @@ import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL.Parse._
 
 trait Main {
+  implicit val ec: ectrace.WrappedExecutionContext = ectrace.WrappedExecutionContext(ExecutionContext.global)
   implicit def liftOption[T](value: T): Option[T] = Some(value)
 
   def links(doc: Document): List[String] =
@@ -79,6 +80,8 @@ trait Main {
       .map(url => fetchDocument(url).flatMap(doc => Future.sequence(links(doc).map(event))))
 
     val results: List[Event] = Await.result(Future.sequence(futures), 60 seconds).flatten.toList
+
+    ec.dumpToFile("timeline.data")
     asIcal(Calendar(
       prodid = Prodid("-//raboof/vvv2ical//NONSGML v1.0//NL"),
       events = results
