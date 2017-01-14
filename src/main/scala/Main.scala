@@ -1,15 +1,16 @@
 import java.io.{ InputStream, OutputStream }
+import java.nio.charset.Charset
 import java.time._
 
 import com.amazonaws.services.lambda.runtime.{ Context, RequestStreamHandler }
 
 import scala.language.implicitConversions
 import scala.language.postfixOps
-import scala.io.Source
+
+import dispatch.Http
 
 import scala.concurrent._
 import scala.concurrent.duration._
-// import scala.concurrent.ExecutionContext.Implicits.global
 
 import icalendar._
 import icalendar.Properties._
@@ -59,12 +60,14 @@ trait Main {
     )
   }
 
-  def fetchDocument(url: String): Future[Document] = Future {
+  def fetchDocument(uri: String): Future[Document] = {
     val browser = JsoupBrowser()
 
     // JsoupBrowser.get expects UTF-8, vvvdeventer is windows codepage
-    val html = Source.fromURL(url, "windows-1252").mkString
-    browser.parseString(html)
+    Http(dispatch.url(uri) OK dispatch.as.String.charset(Charset.forName("windows-1252"))).map {
+      val doc = browser.parseString(_)
+      doc
+    }
   }
 
   def event(url: String): Future[Event] = {
@@ -75,11 +78,13 @@ trait Main {
     val now = java.time.LocalDate.now()
     val urlPrefix =
       s"http://www.deventer.info/nl/agenda/jaarkalender?sub=30&f_agenda_start_date=01-${now.getMonth.ordinal + 1}-${now.getYear}&f_agenda_end_date=31-12-${now.getYear}&start="
-    val futures: Seq[Future[List[Event]]] = Range(0, 1)
+    val futures: Seq[Future[List[Event]]] = Range(0, 5)
       .map(urlPrefix + _ + "0")
       .map(url => fetchDocument(url).flatMap(doc => Future.sequence(links(doc).map(event))))
 
-    val results: List[Event] = Await.result(Future.sequence(futures), 60 seconds).flatten.toList
+    val results: List[Event] = Await.result(Future.sequence(futures), 120 seconds).flatten.toList
+
+    dispatch.Http.shutdown()
 
     ec.dumpToFile("timeline.data")
     asIcal(Calendar(
