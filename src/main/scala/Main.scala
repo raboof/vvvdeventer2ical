@@ -86,7 +86,7 @@ trait Main {
 
     dispatch.Http.shutdown()
 
-    ec.dumpToFile("timeline.data")
+    // ec.dumpToFile("timeline.data")
     asIcal(Calendar(
       prodid = Prodid("-//raboof/vvv2ical//NONSGML v1.0//NL"),
       events = results
