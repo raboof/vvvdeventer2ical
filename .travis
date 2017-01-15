@@ -1,4 +1,0 @@
-# This is already specified in build.sbt... would be nice
-# not to have to repeat that here:
-scala:
-   - 2.12.1
