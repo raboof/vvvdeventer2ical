@@ -84,7 +84,6 @@ trait Main {
 
     val results: List[Event] = Await.result(Future.sequence(futures), 120 seconds).flatten.toList
 
-    dispatch.Http.shutdown()
 
     // ec.dumpToFile("timeline.data")
     asIcal(Calendar(
@@ -106,4 +105,5 @@ class MainLambda extends Main {
 
 object MainApp extends App with Main {
   print(fetchCalendar())
+  dispatch.Http.shutdown()
 }
