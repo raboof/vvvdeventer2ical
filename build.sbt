@@ -16,5 +16,4 @@ libraryDependencies += "net.ruippeixotog" %% "scala-scraper" % "1.2.0"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test"
 
 libraryDependencies += "com.amazonaws" % "aws-lambda-java-core" % "1.0.0"
-// Until https://github.com/dispatch/reboot/issues/134 is released
-libraryDependencies += "net.bzzt" %% "dispatch-core" % "0.12.0-SNAPSHOT"
+libraryDependencies += "net.databinder.dispatch" %% "dispatch-core" % "0.12.0"
