@@ -36,7 +36,10 @@ trait Main {
 
   def getDatalistFields(article: Element): Map[String, String] =
     (article >> elements(".datalist"))
-      .flatMap(_.children.sliding(2, 2).map { case Seq(k, v) => ((k >> text("dt")) -> (v >> text("dd"))) })
+      .flatMap(_.children.sliding(2, 2).flatMap {
+        case Seq(k, v) => Some((k >> text("dt")) -> (v >> text("dd")))
+        case Seq(_) => None
+      })
       .toMap
 
   def parseEvent(url: String, doc: Document): Event = {

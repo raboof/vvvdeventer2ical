@@ -19,7 +19,13 @@ class Test extends WordSpec with Matchers with Main {
     "correctly convert a details page to an event" in {
       val browser = JsoupBrowser()
       val doc = browser.parseResource("/details.html", "Windows-1252")
-      // println(asIcal(Main.parseEvent(72742, doc)))
+      println(asIcal(parseEvent("http://www.deventer.info/nl/agenda/jaarkalender/agenda_id,66310", doc)))
+    }
+
+    "correctly convert a details page with an extra keyless datalist field to an event" in {
+      val browser = JsoupBrowser()
+      val doc = browser.parseResource("/opstelten.html", "Windows-1252")
+      println(asIcal(parseEvent("http://www.deventer.info/nl/agenda/jaarkalender/agenda_id,66310", doc)))
     }
   }
 }
