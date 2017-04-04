@@ -87,7 +87,6 @@ trait Main {
 
     val results: List[Event] = Await.result(Future.sequence(futures), 120 seconds).flatten.toList
 
-
     // ec.dumpToFile("timeline.data")
     asIcal(Calendar(
       prodid = Prodid("-//raboof/vvv2ical//NONSGML v1.0//NL"),
