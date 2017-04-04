@@ -1,3 +1,5 @@
-addSbtPlugin("com.geirsson" %% "sbt-scalafmt" % "0.3.1")
+resolvers += Resolver.typesafeRepo("releases")
+
+addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.6.0")
 
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.3")
