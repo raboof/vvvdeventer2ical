@@ -4,8 +4,6 @@ scalacOptions := Seq("-feature", "-deprecation")
 
 scalaVersion := "2.12.1"
 
-scalafmtConfig in ThisBuild := Some(file(".scalafmt"))
-
 fork in run := true
 
 libraryDependencies += "net.bzzt" %% "scala-icalendar" % "0.0.1-SNAPSHOT"
